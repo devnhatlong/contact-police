@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
 interface PoliceStation {
@@ -11,16 +11,19 @@ interface PoliceStation {
 }
 
 const ContactsScreen = () => {
+    const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+
     const policeStations: PoliceStation[] = [
-        { id: 1, name: "Phòng PA01", address: "" },
-        { id: 2, name: "Phòng PA02", address: "" },
-        { id: 3, name: "Phòng PA03", address: "" },
-        { id: 4, name: "Phòng PA04", address: "" },
-        { id: 5, name: "Phòng PA05", address: "" },
-        { id: 6, name: "Phòng PA06", address: "" },
-        { id: 7, name: "Phòng PA08", address: "" },
-        { id: 8, name: "Phòng PA09", address: "" },
-        { id: 9, name: "Phòng PC01", address: "" },
+        { id: 1, name: "Phòng PA01", address: "Tổ 6B, Khu phố Ruộng Hói, Phường Bảo Vinh" },
+        { id: 2, name: "Phòng PA02", address: "Bùi Hữu Nghĩa, khu phố 2, phường Biên Hòa" },
+        { id: 3, name: "Phòng PA03", address: "01 Phạm Ngọc Thạch, Tổ 2, KP Phú Trung, P Bình Long, Đồng Nai", chief: "Ngô Hoài Thanh - Trưởng Công An", phone: "098.463.3565" },
+        { id: 4, name: "Phòng PA04", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 5, name: "Phòng PA05", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 6, name: "Phòng PA06", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 7, name: "Phòng PA08", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 8, name: "Phòng PA09", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 9, name: "Phòng PC01", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
         { id: 10, name: "Phòng PC02", address: "" },
         { id: 11, name: "Phòng PC03", address: "" },
         { id: 12, name: "Phòng PC04", address: "" },
@@ -177,13 +180,111 @@ const ContactsScreen = () => {
         { id: 155, name: "Đồn Công an KCN Nhân Cơ", address: "" },
         { id: 156, name: "Đồn Công an KCN Tân Rai", address: "" },
     ];
-    
+
+    const filteredStations = policeStations.filter((station) =>
+        station.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const renderItem = ({ item }: { item: PoliceStation }) => {
+        const isExpanded = item.id === expandedId;
+
+        return (
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() => setExpandedId(isExpanded ? null : item.id)}
+            >
+                <View style={styles.row}>
+                    <AntDesign name="right" size={20} color="red" style={styles.icon} />
+                    <Text style={styles.name}>{item.name}</Text>
+                </View>
+                {isExpanded && (
+                    <View style={styles.infoContainer}>
+                        <Text style={styles.address}>{item.address}</Text>
+                        {item.chief && (
+                            <View style={styles.chiefContainer}>
+                                <Text style={styles.chief}>{item.chief}</Text>
+                                <Text style={styles.phone}>{item.phone}</Text>
+                            </View>
+                        )}
+                    </View>
+                )}
+            </TouchableOpacity>
+        );
+    };
+
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <AntDesign name="contacts" size={24} color="black" />
-            <Text>Contacts Screen</Text>
+        <View style={styles.container}>
+            <Text style={styles.header}>Danh bạ điện thoại</Text>
+            <TextInput
+                style={styles.searchBar}
+                placeholder="Nhập tên đơn vị..."
+                value={searchQuery}
+                onChangeText={(text) => setSearchQuery(text)}
+            />
+            <FlatList
+                data={filteredStations}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderItem}
+            />
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        padding: 10,
+    },
+    header: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    searchBar: {
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
+    },
+    card: {
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 16,
+        marginBottom: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    icon: {
+        marginRight: 10,
+    },
+    infoContainer: {
+        marginTop: 10,
+    },
+    name: {
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
+    address: {
+        color: '#555',
+        marginBottom: 4,
+    },
+    chiefContainer: {
+        marginTop: 4,
+    },
+    chief: {
+        fontWeight: 'bold',
+    },
+    phone: {
+        color: '#007AFF',
+    },
+});
 
 export default ContactsScreen;
