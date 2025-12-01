@@ -25,6 +25,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "react-native-maps",
+        {
+          "iosGoogleMapsApiKey": "AIzaSyDTZSHN-vKscaXT3jlx9gAxbt3QNTq6LAw",
+          "androidGoogleMapsApiKey": "AIzaSyDTZSHN-vKscaXT3jlx9gAxbt3QNTq6LAw"
+        }
+      ]
+    ]
   }
 }
