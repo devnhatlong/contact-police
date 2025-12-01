@@ -15,8 +15,8 @@ const ContactsScreen = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
 
     const policeStations: PoliceStation[] = [
-        { id: 1, name: "Phòng PA01", address: "Tổ 6B, Khu phố Ruộng Hói, Phường Bảo Vinh" },
-        { id: 2, name: "Phòng PA02", address: "Bùi Hữu Nghĩa, khu phố 2, phường Biên Hòa" },
+        { id: 1, name: "Phòng PA01", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 2, name: "Phòng PA02", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
         { id: 3, name: "Phòng PA03", address: "01 Phạm Ngọc Thạch, Tổ 2, KP Phú Trung, P Bình Long, Đồng Nai", chief: "Ngô Hoài Thanh - Trưởng Công An", phone: "098.463.3565" },
         { id: 4, name: "Phòng PA04", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
         { id: 5, name: "Phòng PA05", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
@@ -37,7 +37,7 @@ const ContactsScreen = () => {
         { id: 20, name: "Trại tạm giam số 2", address: "" },
         { id: 21, name: "Trại tạm giam số 3", address: "" },
         { id: 22, name: "Phòng PK02", address: "" },
-        { id: 23, name: "Phòng PV01", address: "" },
+        { id: 23, name: "Phòng PV01", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
         { id: 24, name: "Phòng PV05", address: "" },
         { id: 25, name: "Phòng PV06", address: "" },
         { id: 26, name: "Phòng PX01", address: "" },

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import MapView, { Marker, PROVIDER_GOOGLE  } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 
 const styles = StyleSheet.create({
   container: {
@@ -36,8 +36,7 @@ const MapScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* <MapView
-        provider={PROVIDER_GOOGLE}
+      <MapView
         style={styles.map}
         initialRegion={{
           latitude: coordinates.latitude,
@@ -53,7 +52,7 @@ const MapScreen = () => {
         <Text style={styles.text}>
           Latitude: {coordinates.latitude.toFixed(4)}, Longitude: {coordinates.longitude.toFixed(4)}
         </Text>
-      </View> */}
+      </View>
     </View>
   );
 };
