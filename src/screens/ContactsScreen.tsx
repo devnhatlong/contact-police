@@ -155,12 +155,22 @@ const ContactsScreen = () => {
             imageStyle={{ opacity: 0.2 }}
         >
             <Text style={styles.header}>Danh bạ điện thoại</Text>
-            <TextInput
-                style={styles.searchBar}
-                placeholder="Nhập tên đơn vị, xã, phường"
-                value={searchQuery}
-                onChangeText={(text) => setSearchQuery(text)}
-            />
+            <View style={styles.searchContainer}>
+                <TextInput
+                    style={styles.searchBar}
+                    placeholder="Nhập tên đơn vị, xã, phường"
+                    value={searchQuery}
+                    onChangeText={(text) => setSearchQuery(text)}
+                />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity 
+                        style={styles.clearButton}
+                        onPress={() => setSearchQuery('')}
+                    >
+                        <AntDesign name="close-circle" size={18} color="#999" />
+                    </TouchableOpacity>
+                )}
+            </View>
             <FlatList
                 data={filteredContacts}
                 keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
@@ -195,12 +205,21 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 10,
     },
+    searchContainer: {
+        position: 'relative',
+        marginBottom: 10,
+    },
     searchBar: {
         backgroundColor: 'white',
         borderRadius: 8,
         padding: 10,
-        marginBottom: 10,
+        paddingRight: 40,
         height: 50
+    },
+    clearButton: {
+        position: 'absolute',
+        right: 12,
+        top: 16,
     },
     card: {
         backgroundColor: 'rgba(255, 255, 255, 0.95)',

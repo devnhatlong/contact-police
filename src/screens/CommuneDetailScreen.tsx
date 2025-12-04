@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { Commune } from '../services/firebaseService';
+import { Commune } from '../models';
 
 const CommuneDetailScreen = () => {
     const navigation = useNavigation();
@@ -16,7 +15,6 @@ const CommuneDetailScreen = () => {
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Thông tin</Text>
-                        <AntDesign name="down" size={20} color="#333" />
                     </View>
 
                     <View style={styles.infoRow}>
@@ -39,17 +37,17 @@ const CommuneDetailScreen = () => {
                         <Text style={styles.infoValue}>{communeInfo.address}</Text>
                     </View>
 
-                    {/* Button Xem vị trí trên bản đồ */}
-                    <TouchableOpacity style={styles.mapButton}>
-                        <Text style={styles.mapButtonText}>Xem vị trí trên bản đồ</Text>
-                    </TouchableOpacity>
-
                     {communeInfo.sap_nhap && communeInfo.sap_nhap !== 'đang cập nhật' && (
                         <View style={styles.infoRow}>
                             <Text style={styles.infoLabel}>Ghi chú:</Text>
                             <Text style={styles.infoValue}>Sáp nhập: {communeInfo.sap_nhap}</Text>
                         </View>
                     )}
+
+                    {/* Button Xem vị trí trên bản đồ */}
+                    <TouchableOpacity style={styles.mapButton}>
+                        <Text style={styles.mapButtonText}>Xem vị trí trên bản đồ</Text>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Bản đồ Section */}

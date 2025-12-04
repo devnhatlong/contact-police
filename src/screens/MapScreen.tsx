@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     top: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 4,
     zIndex: 999,
   },
 
@@ -118,6 +118,7 @@ const MapScreen = () => {
         <TouchableOpacity
           style={styles.dropdownBox}
           onPress={() => setOpen(!open)}
+          activeOpacity={1}
         >
           <Text style={{ fontSize: 16 }}>{selected}</Text>
           <AntDesign name={open ? "up" : "down"} size={18} />
