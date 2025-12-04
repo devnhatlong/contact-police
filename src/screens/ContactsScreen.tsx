@@ -1,175 +1,99 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, Linking, ImageBackground } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, Linking, ImageBackground, ActivityIndicator, Alert } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { getAllContactsWithCommunes, deleteContact, ContactWithCommune } from '../services/firebaseService';
 
-interface PoliceStation {
-    id: number;
-    name: string;
-    address: string;
-    chief?: string;
-    phone?: string;
-}
+type RootStackParamList = {
+    ContactsList: undefined;
+    CommuneDetail: { communeInfo: any };
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const ContactsScreen = () => {
-    const [expandedId, setExpandedId] = useState<number | null>(null);
+    const navigation = useNavigation<NavigationProp>();
+    const [expandedId, setExpandedId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [contacts, setContacts] = useState<ContactWithCommune[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const policeStations: PoliceStation[] = [
-        { id: 1, name: "Số điện thoại khẩn cấp", address: "" },
-        { id: 2, name: "Phòng Cảnh sát giao thông", address: "" },
+    // Load contacts từ Firebase
+    useEffect(() => {
+        loadContacts();
+    }, []);
 
-        { id: 31, name: "Công an phường 1 Bảo Lộc", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 32, name: "Công an phường 2 Bảo Lộc", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 33, name: "Công an phường 3 Bảo Lộc", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 34, name: "Công an phường B'Lao", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 35, name: "Công an phường Bắc Gia Nghĩa", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 36, name: "Công an phường Bình Thuận", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 37, name: "Công an phường Cam Ly - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 38, name: "Công an phường Hàm Thắng", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 39, name: "Công an phường La Gi", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 40, name: "Công an phường Lâm Viên - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 41, name: "Công an phường LangBiang - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 42, name: "Công an phường Mũi Né", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 43, name: "Công an phường Nam Gia Nghĩa", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 44, name: "Công an phường Phan Thiết", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 45, name: "Công an phường Phú Thủy", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 46, name: "Công an phường Phước Hội", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 47, name: "Công an phường Tiến Thành", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 48, name: "Công an phường Xuân Hương - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 49, name: "Công an phường Xuân Trường - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 50, name: "Công an phường Đông Gia Nghĩa", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+    const loadContacts = async () => {
+        try {
+            setLoading(true);
+            const data = await getAllContactsWithCommunes();
+            setContacts(data);
+        } catch (error) {
+            console.error('Error loading contacts:', error);
+            Alert.alert('Lỗi', 'Không thể tải danh sách liên hệ');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        // ---- DANH SÁCH XÃ ----
-        { id: 51, name: "Công an xã Bắc Bình", address: "" },
-        { id: 52, name: "Công an xã Bắc Ruộng", address: "" },
-        { id: 53, name: "Công an xã Bảo Lâm 1", address: "" },
-        { id: 54, name: "Công an xã Bảo Lâm 2", address: "" },
-        { id: 55, name: "Công an xã Bảo Lâm 3", address: "" },
-        { id: 56, name: "Công an xã Bảo Lâm 4", address: "" },
-        { id: 57, name: "Công an xã Bảo Lâm 5", address: "" },
-        { id: 58, name: "Công an xã Bảo Thuận", address: "" },
-        { id: 59, name: "Công an xã Cát Tiên", address: "" },
-        { id: 60, name: "Công an xã Cát Tiên 2", address: "" },
-        { id: 61, name: "Công an xã Cát Tiên 3", address: "" },
-        { id: 62, name: "Công an xã Cư Jút", address: "" },
-        { id: 63, name: "Công an xã D'Ran", address: "" },
-        { id: 64, name: "Công an xã Di Linh", address: "" },
-        { id: 65, name: "Công an xã Gia Hiệp", address: "" },
-        { id: 66, name: "Công an xã Hải Ninh", address: "" },
-        { id: 67, name: "Công an xã Hàm Kiệm", address: "" },
-        { id: 68, name: "Công an xã Hàm Liêm", address: "" },
-        { id: 69, name: "Công an xã Hàm Tân", address: "" },
-        { id: 70, name: "Công an xã Hàm Thạnh", address: "" },
-        { id: 71, name: "Công an xã Hàm Thuận", address: "" },
-        { id: 72, name: "Công an xã Hàm Thuận Bắc", address: "" },
-        { id: 73, name: "Công an xã Hàm Thuận Nam", address: "" },
-        { id: 74, name: "Công an xã Hiệp Thạnh", address: "" },
-        { id: 75, name: "Công an xã Hòa Bắc", address: "" },
-        { id: 76, name: "Công an xã Hòa Ninh", address: "" },
-        { id: 77, name: "Công an xã Hòa Thắng", address: "" },
-        { id: 78, name: "Công an xã Hoài Đức", address: "" },
-        { id: 79, name: "Công an xã Hồng Sơn", address: "" },
-        { id: 80, name: "Công an xã Hồng Thái", address: "" },
-        { id: 81, name: "Công an xã Ka Đô", address: "" },
-        { id: 82, name: "Công an xã Kiến Đức", address: "" },
-        { id: 83, name: "Công an xã Krông Nô", address: "" },
-        { id: 84, name: "Công an xã La Dạ", address: "" },
-        { id: 85, name: "Công an xã Lạc Dương", address: "" },
-        { id: 86, name: "Công an xã Liên Hương", address: "" },
-        { id: 87, name: "Công an xã Lương Sơn", address: "" },
-        { id: 88, name: "Công an xã Nam Ban Lâm Hà", address: "" },
-        { id: 89, name: "Công an xã Nam Dong", address: "" },
-        { id: 90, name: "Công an xã Nam Hà Lâm Hà", address: "" },
-        { id: 91, name: "Công an xã Nâm Nung", address: "" },
-        { id: 92, name: "Công an xã Nam Thành", address: "" },
-        { id: 93, name: "Công an xã Nam Đà", address: "" },
-        { id: 94, name: "Công an xã Nghị Đức", address: "" },
-        { id: 95, name: "Công an xã Nhân Cơ", address: "" },
-        { id: 96, name: "Công an xã Ninh Gia", address: "" },
-        { id: 97, name: "Công an xã Phan Rí Cửa", address: "" },
-        { id: 98, name: "Công an xã Phan Sơn", address: "" },
-        { id: 99, name: "Công an xã Phú Sơn Lâm Hà", address: "" },
-        { id: 100, name: "Công an xã Phúc Thọ Lâm Hà", address: "" },
+    const handleDeleteContact = async (id: string, name: string) => {
+        Alert.alert(
+            'Xác nhận xóa',
+            `Bạn có chắc muốn xóa "${name}"?`,
+            [
+                { text: 'Hủy', style: 'cancel' },
+                {
+                    text: 'Xóa',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteContact(id);
+                            loadContacts(); // Refresh danh sách
+                            Alert.alert('Thành công', 'Đã xóa liên hệ');
+                        } catch (error) {
+                            Alert.alert('Lỗi', 'Không thể xóa liên hệ');
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
-        { id: 101, name: "Công an xã Quảng Hòa", address: "" },
-        { id: 102, name: "Công an xã Quảng Khê", address: "" },
-        { id: 103, name: "Công an xã Quảng Lập", address: "" },
-        { id: 104, name: "Công an xã Quảng Phú", address: "" },
-        { id: 105, name: "Công an xã Quảng Sơn", address: "" },
-        { id: 106, name: "Công an xã Quảng Tân", address: "" },
-        { id: 107, name: "Công an xã Quảng Tín", address: "" },
-        { id: 108, name: "Công an xã Quảng Trực", address: "" },
-        { id: 109, name: "Công an xã Sơn Mỹ", address: "" },
-        { id: 110, name: "Công an xã Sơn Điền", address: "" },
-        { id: 111, name: "Công an xã Sông Lũy", address: "" },
-        { id: 112, name: "Công an xã Suối Kiết", address: "" },
-        { id: 113, name: "Công an xã Tà Hine", address: "" },
-        { id: 114, name: "Công an xã Tà Năng", address: "" },
-        { id: 115, name: "Công an xã Tà Đùng", address: "" },
-        { id: 116, name: "Công an xã Tân Hà Lâm Hà", address: "" },
-        { id: 117, name: "Công an xã Tân Hải", address: "" },
-        { id: 118, name: "Công an xã Tân Hội", address: "" },
-        { id: 119, name: "Công an xã Tân Lập", address: "" },
-        { id: 120, name: "Công an xã Tân Minh", address: "" },
-        { id: 121, name: "Công an xã Tân Thành", address: "" },
-        { id: 122, name: "Công an xã Tánh Linh", address: "" },
-        { id: 123, name: "Công an xã Thuận An", address: "" },
-        { id: 124, name: "Công an xã Thuận Hạnh", address: "" },
-        { id: 125, name: "Công an xã Trà Tân", address: "" },
-        { id: 126, name: "Công an xã Trường Xuân", address: "" },
-        { id: 127, name: "Công an xã Tuy Phong", address: "" },
-        { id: 128, name: "Công an xã Tuy Đức", address: "" },
-        { id: 129, name: "Công an xã Tuyên Quang", address: "" },
-        { id: 130, name: "Công an xã Vĩnh Hảo", address: "" },
-
-        { id: 131, name: "Công an xã Đạ Huoai", address: "" },
-        { id: 132, name: "Công an xã Đạ Huoai 2", address: "" },
-        { id: 133, name: "Công an xã Đạ Huoai 3", address: "" },
-        { id: 134, name: "Công an xã Đạ Tẻh", address: "" },
-        { id: 135, name: "Công an xã Đạ Tẻh 2", address: "" },
-        { id: 136, name: "Công an xã Đạ Tẻh 3", address: "" },
-        { id: 137, name: "Công an xã Đắk Mil", address: "" },
-        { id: 138, name: "Công an xã Đắk Sắk", address: "" },
-        { id: 139, name: "Công an xã Đắk Song", address: "" },
-        { id: 140, name: "Công an xã Đắk Wil", address: "" },
-
-        { id: 141, name: "Công an xã Đam Rông 1", address: "" },
-        { id: 142, name: "Công an xã Đam Rông 2", address: "" },
-        { id: 143, name: "Công an xã Đam Rông 3", address: "" },
-        { id: 144, name: "Công an xã Đam Rông 4", address: "" },
-
-        { id: 145, name: "Công an xã Đinh Trang Thượng", address: "" },
-        { id: 146, name: "Công an xã Đinh Văn Lâm Hà", address: "" },
-        { id: 147, name: "Công an xã Đơn Dương", address: "" },
-        { id: 148, name: "Công an xã Đông Giang", address: "" },
-        { id: 149, name: "Công an xã Đồng Kho", address: "" },
-        { id: 150, name: "Công an xã Đức An", address: "" },
-        { id: 151, name: "Công an xã Đức Lập", address: "" },
-        { id: 152, name: "Công an xã Đức Linh", address: "" },
-        { id: 153, name: "Công an xã Đức Trọng", address: "" },
-
-        { id: 154, name: "Đặc khu Phú Quý", address: "" },
-        { id: 155, name: "Đồn Công an KCN Nhân Cơ", address: "" },
-        { id: 156, name: "Đồn Công an KCN Tân Rai", address: "" },
-    ];
-
-    const filteredStations = policeStations.filter((station) =>
-        station.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredContacts = contacts.filter((contact) =>
+        contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (contact.communeInfo?.ten_xa || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (contact.communeInfo?.ten_tinh || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const renderItem = ({ item }: { item: PoliceStation }) => {
+    if (loading) {
+        return (
+            <View style={[styles.container, styles.centerContent]}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={styles.loadingText}>Đang tải...</Text>
+            </View>
+        );
+    }
+
+    const renderItem = ({ item }: { item: ContactWithCommune }) => {
         const isExpanded = item.id === expandedId;
 
         const handleCall = (phone: string) => {
-            const phoneNumber = phone.replace(/\./g, '');
+            const phoneNumber = phone.replace(/\./g, '').replace(/\-/g, '').replace(/\s/g, '');
             Linking.openURL(`tel:${phoneNumber}`);
+        };
+
+        const handleViewDetail = () => {
+            if (item.communeInfo) {
+                navigation.navigate('CommuneDetail', { communeInfo: item.communeInfo });
+            }
         };
 
         return (
             <TouchableOpacity
                 style={styles.card}
-                onPress={() => setExpandedId(isExpanded ? null : item.id)}
+                onPress={() => setExpandedId(isExpanded ? null : item.id || null)}
             >
                 <View style={styles.cardHeader}>
                     <View style={styles.nameContainer}>
@@ -180,36 +104,40 @@ const ContactsScreen = () => {
                             style={styles.icon} 
                         />
                         <View style={styles.textContainer}>
-                            <Text style={styles.name}>{item.name}</Text>
-                            {item.address && (
+                            <Text style={styles.name}>{item.communeInfo?.name || item.name}</Text>
+                            {item.communeInfo && (
                                 <Text style={styles.addressPreview} numberOfLines={1}>
-                                    {item.address}
+                                    {item.communeInfo.ten_xa}, {item.communeInfo.ten_tinh}
                                 </Text>
                             )}
                         </View>
                     </View>
-                    <AntDesign name="right" size={20} color="red" />
+                    <View style={styles.rightActions}>
+                        <TouchableOpacity onPress={handleViewDetail}>
+                            <AntDesign name="right-circle" size={20} color="red" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                {isExpanded && item.address && (
+                
+                {isExpanded && (
                     <View style={styles.infoContainer}>
-                        {item.chief && (
-                            <View style={styles.chiefContainer}>
-                                <View style={styles.chiefRow}>
-                                    <View style={styles.chiefTextContainer}>
-                                        <Text style={styles.chief}>{item.chief}</Text>
-                                        <Text style={styles.phone}>{item.phone}</Text>
-                                    </View>
-                                    {item.phone && (
-                                        <TouchableOpacity 
-                                            onPress={() => handleCall(item.phone!)}
-                                            style={styles.phoneButtonExpanded}
-                                        >
-                                            <Feather name="phone" size={20} color="red" style={{ transform: [{ scaleX: -1 }] }} />
-                                        </TouchableOpacity>
-                                    )}
-                                </View>
+                        {/* Thông tin người đứng đầu và điện thoại */}
+                        <View style={styles.chiefContainer}>
+                            <View style={styles.chiefInfo}>
+                                <Text style={styles.chiefName}>{item.name}</Text>
+                                {item.phone && (
+                                    <Text style={styles.phoneNumber}>{item.phone}</Text>
+                                )}
                             </View>
-                        )}
+                            {item.phone && (
+                                <TouchableOpacity 
+                                    onPress={() => handleCall(item.phone)}
+                                    style={styles.phoneIconButton}
+                                >
+                                    <Feather name="phone" size={24} color="red" style={{ transform: [{ scaleX: -1 }] }} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
                     </View>
                 )}
             </TouchableOpacity>
@@ -226,14 +154,19 @@ const ContactsScreen = () => {
             <Text style={styles.header}>Danh bạ điện thoại</Text>
             <TextInput
                 style={styles.searchBar}
-                placeholder="Nhập tên đơn vị..."
+                placeholder="Nhập tên đơn vị, xã, phường"
                 value={searchQuery}
                 onChangeText={(text) => setSearchQuery(text)}
             />
             <FlatList
-                data={filteredStations}
-                keyExtractor={(item) => item.id.toString()}
+                data={filteredContacts}
+                keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
                 renderItem={renderItem}
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>Chưa có liên hệ nào</Text>
+                    </View>
+                }
             />
         </ImageBackground>
     );
@@ -244,6 +177,15 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
         padding: 10,
+    },
+    centerContent: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#666',
     },
     header: {
         fontSize: 22,
@@ -288,16 +230,40 @@ const styles = StyleSheet.create({
     phoneButton: {
         padding: 4,
     },
-    row: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
     icon: {
         marginRight: 8,
     },
     infoContainer: {
-        marginTop: 10,
+        marginTop: 12,
         paddingLeft: 24,
+    },
+    address: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 12,
+        lineHeight: 20,
+    },
+    chiefContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    chiefInfo: {
+        flex: 1,
+    },
+    chiefName: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 4,
+    },
+    phoneNumber: {
+        fontSize: 14,
+        color: '#007AFF',
+    },
+    phoneIconButton: {
+        padding: 8,
+        marginLeft: 12,
     },
     name: {
         fontWeight: '600',
@@ -309,33 +275,50 @@ const styles = StyleSheet.create({
         fontSize: 13,
         marginTop: 2,
     },
-    address: {
-        color: '#666',
-        marginBottom: 4,
-        fontSize: 14,
+    divider: {
+        height: 1,
+        backgroundColor: '#e0e0e0',
+        marginVertical: 12,
     },
-    chiefContainer: {
-        marginTop: 4,
+    sectionTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#007AFF',
+        marginBottom: 8,
     },
-    chiefRow: {
+    infoRow: {
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        marginBottom: 6,
     },
-    chiefTextContainer: {
+    infoLabel: {
+        fontSize: 14,
+        color: '#666',
+        width: 110,
+        fontWeight: '500',
+    },
+    infoValue: {
+        fontSize: 14,
+        color: '#333',
         flex: 1,
     },
-    phoneButtonExpanded: {
-        padding: 4,
-        marginLeft: 8,
+    deleteButton: {
+        backgroundColor: '#ff3b30',
+        padding: 10,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginTop: 12,
     },
-    chief: {
-        fontWeight: 'bold',
-        fontSize: 14,
+    deleteButtonText: {
+        color: 'white',
+        fontWeight: '600',
     },
-    phone: {
-        color: '#007AFF',
-        fontSize: 14,
+    emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#999',
     },
 });
 
