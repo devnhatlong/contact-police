@@ -40,7 +40,7 @@ export default function App() {
                 if (route.name === 'Danh bạ') {
                   return <AntDesign name="contacts" size={size} color={color} />;
                 } else if (route.name === 'Bản đồ') {
-                  return <FontAwesome name="map-marker" size={size} color={color} />;
+                  return <FontAwesome name="map-o" size={size} color={color} />
                 }
               },
             })}
