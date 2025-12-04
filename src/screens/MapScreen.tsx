@@ -9,7 +9,18 @@ const styles = StyleSheet.create({
 });
 
 const MapScreen = () => {
-  const myMapUrl = "https://www.google.com/maps/d/u/0/edit?mid=1ZB99i3agA0Wc0QqlquYLGWbEMfLGUZM&usp=sharing";
+  const myMapUrl = "https://www.google.com/maps/d/u/0/viewer?mid=1ZB99i3agA0Wc0QqlquYLGWbEMfLGUZM&usp=sharing";
+
+  // Chặn mọi navigation request (không cho mở link ngoài)
+  const handleShouldStartLoadWithRequest = (request: any) => {
+    // Chỉ cho phép load URL ban đầu của My Maps
+    if (request.url.includes('google.com/maps/d') && 
+        request.url.includes('1ZB99i3agA0Wc0QqlquYLGWbEMfLGUZM')) {
+      return true;
+    }
+    // Chặn tất cả các URL khác
+    return false;
+  };
 
   // Inject CSS để ẩn các phần tử không cần thiết
   const injectedJavaScript = `
@@ -157,6 +168,9 @@ const MapScreen = () => {
         style={styles.container}
         injectedJavaScript={injectedJavaScript}
         javaScriptEnabled={true}
+        onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
+        originWhitelist={['https://www.google.com']}
+        allowsBackForwardNavigationGestures={false}
       />
     </View>
   );

@@ -193,10 +193,11 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     searchBar: {
-        backgroundColor: '#f0f0f0',
+        backgroundColor: 'white',
         borderRadius: 8,
         padding: 10,
         marginBottom: 10,
+        height: 50
     },
     card: {
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
