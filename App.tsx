@@ -4,13 +4,18 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert, Modal } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import ContactsScreen from './src/screens/ContactsScreen';
 import MapScreen from './src/screens/MapScreen';
 import CommuneDetailScreen from './src/screens/CommuneDetailScreen';
-import { addSampleData, addSampleCommune } from './src/services/firebaseService';
+import { 
+  addCommunesFromInfo, 
+  addCommunesFromDropdown, 
+  addContactsFromFile,
+  addAllData
+} from './src/services/firebaseService';
 import { Commune } from './src/services/firebaseService';
 
 export type RootStackParamList = {
@@ -29,6 +34,35 @@ const PRIMARY_COLOR = '#dc3545';
 // Contacts Stack (header nhỏ)
 // ===========================
 function ContactsStack() {
+  const [importModalVisible, setImportModalVisible] = React.useState(false);
+
+  const handleImport = async (type: string) => {
+    setImportModalVisible(false);
+    
+    try {
+      switch (type) {
+        case 'contacts':
+          await addContactsFromFile();
+          Alert.alert('Thành công', 'Đã thêm contacts từ contact_info.ts!');
+          break;
+        case 'communes_info':
+          await addCommunesFromInfo();
+          Alert.alert('Thành công', 'Đã thêm communes từ communes_info.ts!');
+          break;
+        case 'communes_dropdown':
+          await addCommunesFromDropdown();
+          Alert.alert('Thành công', 'Đã thêm communes từ communes_dropdown.ts!');
+          break;
+        case 'all':
+          await addAllData();
+          Alert.alert('Thành công', 'Đã thêm tất cả dữ liệu!');
+          break;
+      }
+    } catch (error: any) {
+      Alert.alert('Lỗi', error.message || 'Không thể thêm dữ liệu');
+    }
+  };
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -49,54 +83,63 @@ function ContactsStack() {
         options={({ navigation }) => ({
           title: 'Công an tỉnh Lâm Đồng',
           headerRight: () => (
-            <TouchableOpacity
-              style={styles.importButton}
-              onPress={async () => {
-                Alert.alert(
-                  'Import dữ liệu mẫu',
-                  'Bạn muốn import loại dữ liệu nào?',
-                  [
-                    { text: 'Hủy', style: 'cancel' },
-                    {
-                      text: 'Contacts',
-                      onPress: async () => {
-                        try {
-                          await addSampleData();
-                          Alert.alert('Thành công', 'Đã thêm contacts mẫu vào Firebase!');
-                        } catch (error: any) {
-                          Alert.alert('Lỗi', error.message || 'Không thể thêm dữ liệu');
-                        }
-                      },
-                    },
-                    {
-                      text: 'Commune',
-                      onPress: async () => {
-                        try {
-                          await addSampleCommune();
-                          Alert.alert('Thành công', 'Đã thêm commune mẫu vào Firebase!');
-                        } catch (error: any) {
-                          Alert.alert('Lỗi', error.message || 'Không thể thêm dữ liệu');
-                        }
-                      },
-                    },
-                    {
-                      text: 'Cả hai',
-                      onPress: async () => {
-                        try {
-                          await addSampleCommune();
-                          await addSampleData();
-                          Alert.alert('Thành công', 'Đã thêm tất cả dữ liệu mẫu!');
-                        } catch (error: any) {
-                          Alert.alert('Lỗi', error.message || 'Không thể thêm dữ liệu');
-                        }
-                      },
-                    },
-                  ]
-                );
-              }}
-            >
-              <Text style={styles.importButtonText}>Import Test Data</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                style={styles.importButton}
+                onPress={() => setImportModalVisible(true)}
+              >
+                <Text style={styles.importButtonText}>Import Test Data</Text>
+              </TouchableOpacity>
+
+              <Modal
+                animationType="fade"
+                transparent={true}
+                visible={importModalVisible}
+                onRequestClose={() => setImportModalVisible(false)}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Import dữ liệu</Text>
+                    <Text style={styles.modalSubtitle}>Chọn nguồn dữ liệu để import:</Text>
+
+                    <TouchableOpacity
+                      style={styles.modalButton}
+                      onPress={() => handleImport('contacts')}
+                    >
+                      <Text style={styles.modalButtonText}>Contacts (contact_info.ts)</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.modalButton}
+                      onPress={() => handleImport('communes_info')}
+                    >
+                      <Text style={styles.modalButtonText}>Communes (communes_info.ts)</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.modalButton}
+                      onPress={() => handleImport('communes_dropdown')}
+                    >
+                      <Text style={styles.modalButtonText}>Communes (communes_dropdown.ts)</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.modalButton}
+                      onPress={() => handleImport('all')}
+                    >
+                      <Text style={styles.modalButtonText}>Tất cả</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.cancelButton]}
+                      onPress={() => setImportModalVisible(false)}
+                    >
+                      <Text style={styles.cancelButtonText}>Hủy</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            </>
           ),
         })}
       />
@@ -190,6 +233,52 @@ const styles = StyleSheet.create({
   importButtonText: {
     color: 'white',
     fontSize: 12,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    width: '85%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButton: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  cancelButton: {
+    backgroundColor: '#f0f0f0',
+    marginTop: 5,
+  },
+  cancelButtonText: {
+    color: '#333',
+    fontSize: 15,
     fontWeight: '600',
   },
 });

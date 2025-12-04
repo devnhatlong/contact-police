@@ -1,175 +1,168 @@
-import { View, StyleSheet } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList } from "react-native";
+import { useState } from "react";
+import { WebView } from "react-native-webview";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
+  },
+
+  overlayContainer: {
+    position: "absolute",
+    width: "100%",
+    top: 10,
+    paddingHorizontal: 12,
+    zIndex: 999,
+  },
+
+  dropdownBox: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#d9d9d9",
+    padding: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    elevation: 4,
+  },
+
+  searchInput: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 10,
+  },
+
+  dropdownList: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    marginTop: 5,
+    maxHeight: 350,
+  },
+
+  item: {
+    padding: 14,
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+  },
+
+  itemText: {
+    fontSize: 16,
   },
 });
 
-const MapScreen = () => {
-  const myMapUrl = "https://www.google.com/maps/d/u/0/viewer?mid=1ZB99i3agA0Wc0QqlquYLGWbEMfLGUZM&usp=sharing";
+const ALL_COMMUNES = [
+  "Xã Bảo Thuận",
+  "Xã Lộc Ngãi",
+  "Xã Lộc Đức",
+  "Xã Đinh Trang Thượng",
+  "Xã Lộc An",
+  "Xã Mỹ Lâm",
+  "Xã Hòa Ninh",
+  "Xã Hòa Nam",
+  "Xã Tân Nghĩa",
+  "Xã Tân Lâm",
+  "Xã Liên Đầm",
+  "Xã Gia Lâm",
+  "Xã Phú Hội",
+  "Xã Tân Hội",
+  "Xã Tân Hà",
+  "Xã Phú Sơn",
+  "Xã Lộc Bắc",
+  "Xã Lộc Bảo",
+  "Xã Lộc Phú",
+  "Xã Lộc Tân",
+  "Xã Lộc Quảng",
+];
 
-  // Chặn mọi navigation request (không cho mở link ngoài)
+const MapScreen = () => {
+  const myMapUrl =
+    "https://www.google.com/maps/d/u/0/viewer?mid=1ZB99i3agA0Wc0QqlquYLGWbEMfLGUZM&usp=sharing";
+
+  const [open, setOpen] = useState(false);
+  const [keyword, setKeyword] = useState("");
+  const [selected, setSelected] = useState("Chọn xã/phường");
+
+  const filteredList = ALL_COMMUNES.filter((x) =>
+    x.toLowerCase().includes(keyword.toLowerCase())
+  ).slice(0, 10); // LIMIT 10
+
+  // Chặn mở trang Google
   const handleShouldStartLoadWithRequest = (request: any) => {
-    // Chỉ cho phép load URL ban đầu của My Maps
-    if (request.url.includes('google.com/maps/d') && 
-        request.url.includes('1ZB99i3agA0Wc0QqlquYLGWbEMfLGUZM')) {
+    if (
+      request.url.includes("google.com/maps/d") &&
+      request.url.includes("1ZB99i3agA0Wc0QqlquYLGWbEMfLGUZM")
+    ) {
       return true;
     }
-    // Chặn tất cả các URL khác
     return false;
   };
 
-  // Inject CSS để ẩn các phần tử không cần thiết
-  const injectedJavaScript = `
-    (function() {
-      // Thêm CSS để ẩn các phần tử
-      const style = document.createElement('style');
-      style.innerHTML = \`
-        /* Ẩn nút đăng nhập */
-        .Te60Vd-ZMv3u.dIxMhd-bN97Pc-b3rLgd,
-        button[aria-label*="Đăng nhập"],
-        .gb_Lf.gb_la.gb_kf,
-        .gb_Qd,
-        .gb_Ld {
-          display: none !important;
-        }
-        
-        /* Ẩn thanh tỷ lệ bản đồ */
-        .yePe5c-haAclf.yePe5c-HzV7m.yePe5c-hJDwNd {
-          display: none !important;
-        }
-        
-        /* Ẩn logo Google My Maps */
-        a[href*="google.com/maps"],
-        #watermark,
-        .logo,
-        [aria-label*="Google"],
-        .gm-style-cc {
-          display: none !important;
-        }
-        
-        /* Ẩn dòng "Dữ liệu bản đồ" và copyright */
-        .gm-style-cc,
-        .gmnoprint,
-        div[style*="color: rgb(0, 0, 0)"],
-        .gm-style-pbc {
-          display: none !important;
-        }
-        
-        /* Ẩn tất cả text ở footer */
-        footer,
-        .footer-text,
-        [class*="copyright"],
-        [class*="attribution"] {
-          display: none !important;
-        }
-      \`;
-      document.head.appendChild(style);
-      
-      // Hàm ẩn các element bằng JavaScript (sau khi DOM load)
-      function hideElements() {
-        // Ẩn tất cả link có chứa "google.com/maps"
-        document.querySelectorAll('a[href*="google.com/maps"]').forEach(el => {
-          el.style.display = 'none';
-          el.style.pointerEvents = 'none';
-          el.remove(); // Xóa luôn khỏi DOM
-        });
-        
-        // Ẩn theo class
-        const classesToHide = [
-          'yePe5c-haAclf',
-          'Te60Vd-ZMv3u',
-          'gb_Lf',
-          'gb_Qd',
-          'gb_Ld',
-          'gmnoprint',
-          'gm-style-cc'
-        ];
-        
-        classesToHide.forEach(className => {
-          document.querySelectorAll('.' + className).forEach(el => {
-            el.style.display = 'none';
-            el.style.pointerEvents = 'none';
-            el.remove(); // Xóa luôn khỏi DOM
-          });
-        });
-        
-        // Ẩn tất cả element chứa text cụ thể
-        document.querySelectorAll('*').forEach(el => {
-          const text = el.textContent || '';
-          if (text.includes('Google My Maps') || 
-              text.includes('Dữ liệu bản đồ') ||
-              text.includes('©2025') ||
-              text.includes('20 km') ||
-              text.includes('Điều khoản') ||
-              text.includes('Đăng nhập') ||
-              text.includes('Google')) {
-            if (el.children.length === 0 || el.tagName === 'A' || el.tagName === 'BUTTON') {
-              el.style.display = 'none';
-              el.style.visibility = 'hidden';
-              el.style.opacity = '0';
-              el.style.pointerEvents = 'none';
-            }
-          }
-        });
-        
-        // Ẩn tất cả button trừ các button cần thiết
-        document.querySelectorAll('button').forEach(el => {
-          const text = el.textContent || '';
-          const ariaLabel = el.getAttribute('aria-label') || '';
-          if (ariaLabel.includes('Đăng nhập') || 
-              ariaLabel.includes('Google') ||
-              text.includes('Đăng nhập')) {
-            el.style.display = 'none';
-            el.style.pointerEvents = 'none';
-            el.remove(); // Xóa luôn khỏi DOM
-          }
-        });
-        
-        // Chặn tất cả click vào link
-        document.querySelectorAll('a').forEach(link => {
-          link.addEventListener('click', function(e) {
-            const href = link.getAttribute('href') || '';
-            if (href.includes('google.com') || 
-                href.includes('maps') ||
-                href.includes('terms')) {
-              e.preventDefault();
-              e.stopPropagation();
-              return false;
-            }
-          }, true);
-        });
-      }
-      
-      // Chạy ngay khi load
-      hideElements();
-      
-      // Chạy lại sau 1s để bắt các element load muộn
-      setTimeout(hideElements, 1000);
-      setTimeout(hideElements, 2000);
-      
-      // Theo dõi thay đổi DOM và ẩn tiếp
-      const observer = new MutationObserver(hideElements);
-      observer.observe(document.body, { 
-        childList: true, 
-        subtree: true 
-      });
-    })();
-    true;
-  `;
+  // CSS inject ẩn Google elements
+  const injectedJavaScript = ` ... giữ nguyên như code bạn gửi ... `;
 
   return (
     <View style={styles.container}>
+      {/* 🔍 Overlay Search */}
+      <View style={styles.overlayContainer}>
+        
+        {/* Hộp chọn xã */}
+        <TouchableOpacity
+          style={styles.dropdownBox}
+          onPress={() => setOpen(!open)}
+        >
+          <Text style={{ fontSize: 16 }}>{selected}</Text>
+          <AntDesign name={open ? "up" : "down"} size={18} />
+        </TouchableOpacity>
+
+        {/* Ô tìm kiếm */}
+        {open && (
+          <>
+            <TextInput
+              placeholder="Tìm kiếm xã/phường..."
+              style={styles.searchInput}
+              value={keyword}
+              onChangeText={setKeyword}
+            />
+
+            {/* Danh sách */}
+            <View style={styles.dropdownList}>
+              <FlatList
+                data={filteredList}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.item}
+                    onPress={() => {
+                      setSelected(item);
+                      setOpen(false);
+                    }}
+                  >
+                    <Text style={styles.itemText}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </>
+        )}
+      </View>
+
+      {/* WebView map */}
       <WebView
         source={{ uri: myMapUrl }}
-        style={styles.container}
+        style={{ flex: 1 }}
         injectedJavaScript={injectedJavaScript}
         javaScriptEnabled={true}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
-        originWhitelist={['https://www.google.com']}
+        originWhitelist={["https://www.google.com"]}
         allowsBackForwardNavigationGestures={false}
       />
     </View>

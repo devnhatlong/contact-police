@@ -38,10 +38,10 @@ const ContactsScreen = () => {
         }
     };
 
-    const handleDeleteContact = async (id: string, name: string) => {
+    const handleDeleteContact = async (id: string, fullName: string) => {
         Alert.alert(
             'Xác nhận xóa',
-            `Bạn có chắc muốn xóa "${name}"?`,
+            `Bạn có chắc muốn xóa "${fullName}"?`,
             [
                 { text: 'Hủy', style: 'cancel' },
                 {
@@ -62,7 +62,7 @@ const ContactsScreen = () => {
     };
 
     const filteredContacts = contacts.filter((contact) =>
-        contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (contact.communeInfo?.ten_xa || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (contact.communeInfo?.ten_tinh || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -79,8 +79,9 @@ const ContactsScreen = () => {
     const renderItem = ({ item }: { item: ContactWithCommune }) => {
         const isExpanded = item.id === expandedId;
 
-        const handleCall = (phone: string) => {
-            const phoneNumber = phone.replace(/\./g, '').replace(/\-/g, '').replace(/\s/g, '');
+        const handleCall = (mobile: string | null | undefined) => {
+            if (!mobile) return;
+            const phoneNumber = mobile.replace(/\./g, '').replace(/\-/g, '').replace(/\s/g, '');
             Linking.openURL(`tel:${phoneNumber}`);
         };
 
@@ -104,7 +105,7 @@ const ContactsScreen = () => {
                             style={styles.icon} 
                         />
                         <View style={styles.textContainer}>
-                            <Text style={styles.name}>{item.communeInfo?.name || item.name}</Text>
+                            <Text style={styles.name}>{item.communeInfo?.name || item.fullName}</Text>
                             {item.communeInfo && (
                                 <Text style={styles.addressPreview} numberOfLines={1}>
                                     {item.communeInfo.ten_xa}, {item.communeInfo.ten_tinh}
@@ -124,14 +125,14 @@ const ContactsScreen = () => {
                         {/* Thông tin người đứng đầu và điện thoại */}
                         <View style={styles.chiefContainer}>
                             <View style={styles.chiefInfo}>
-                                <Text style={styles.chiefName}>{item.name}</Text>
-                                {item.phone && (
-                                    <Text style={styles.phoneNumber}>{item.phone}</Text>
+                                <Text style={styles.chiefName}>{item.fullName}</Text>
+                                {item.mobile && (
+                                    <Text style={styles.phoneNumber}>{item.mobile}</Text>
                                 )}
                             </View>
-                            {item.phone && (
+                            {item.mobile && (
                                 <TouchableOpacity 
-                                    onPress={() => handleCall(item.phone)}
+                                    onPress={() => handleCall(item.mobile)}
                                     style={styles.phoneIconButton}
                                 >
                                     <Feather name="phone" size={24} color="red" style={{ transform: [{ scaleX: -1 }] }} />

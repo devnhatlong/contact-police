@@ -13,33 +13,45 @@ import { db } from '../config/firebase';
 
 const CONTACTS_COLLECTION = 'contacts';
 const COMMUNES_COLLECTION = 'communes'; // Thông tin xã
+const COMMUNES_DROPDOWN_COLLECTION = 'communes_dropdown'; // Thông tin xã từ dropdown
 
-// Interface cho Contact
-export interface Contact {
+// Import interfaces từ các file dữ liệu
+export interface contactInfo {
+    unitCode: string;
+    fullName: string;
+    mobile?: string | null;
+}
+
+export interface CommuneDropdown {
+    ten_xa: string;
+    ma_xa: string;
+}
+
+export interface CommuneInfo {
+    ma_xa: string;
+    ten_xa: string;
+    name: string;
+    loai: string;
+    cap: number;
+    ma_tinh: string;
+    ten_tinh: string;
+    dan_so: number;
+    dtich_km2: number;
+    matdo_km2: number;
+    address: string;
+    tru_so: string;
+    sap_nhap: string;
+}
+
+// Interface cho Firestore (có thêm id và timestamps)
+export interface Contact extends contactInfo {
     id?: string;
-    name: string; // Tên trưởng công an
-    phone: string;
-    ma_xa?: string; // Key để liên kết với Commune
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-// Interface cho Commune (Thông tin xã)
-export interface Commune {
+export interface Commune extends CommuneInfo {
     id?: string;
-    ma_xa: string; // Mã xã (khóa chính)
-    ten_xa: string; // Tên xã
-    name: string; // Tên đầy đủ (Công an xã...)
-    loai: string; // Loại: "Xã", "Phường", "Thị trấn"
-    cap: number; // Cấp
-    ma_tinh: string; // Mã tỉnh
-    ten_tinh: string; // Tên tỉnh
-    dan_so: number; // Dân số
-    dtich_km2: number; // Diện tích (km²)
-    matdo_km2: number; // Mật độ (người/km²)
-    address: string; // Địa chỉ trụ sở
-    tru_so: string; // Trụ sở
-    sap_nhap: string; // Thông tin sáp nhập
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -50,7 +62,7 @@ export interface Commune {
 export const getAllContacts = async (): Promise<Contact[]> => {
     try {
         const contactsRef = collection(db, CONTACTS_COLLECTION);
-        const q = query(contactsRef, orderBy('name'));
+        const q = query(contactsRef, orderBy('fullName'));
         const querySnapshot = await getDocs(q);
 
         const contacts: Contact[] = [];
@@ -68,11 +80,11 @@ export const getAllContacts = async (): Promise<Contact[]> => {
     }
 };
 
-// Lấy contact theo ma_xa
-export const getContactByMaXa = async (ma_xa: string): Promise<Contact | null> => {
+// Lấy contact theo unitCode
+export const getContactByUnitCode = async (unitCode: string): Promise<Contact | null> => {
     try {
         const contactsRef = collection(db, CONTACTS_COLLECTION);
-        const q = query(contactsRef, where('ma_xa', '==', ma_xa));
+        const q = query(contactsRef, where('unitCode', '==', unitCode));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
@@ -85,13 +97,13 @@ export const getContactByMaXa = async (ma_xa: string): Promise<Contact | null> =
             ...doc.data()
         } as Contact;
     } catch (error) {
-        console.error('Error getting contact by ma_xa:', error);
+        console.error('Error getting contact by unitCode:', error);
         throw error;
     }
 };
 
 // Thêm contact mới
-export const addContact = async (contact: Omit<Contact, 'id'>): Promise<string> => {
+export const addContact = async (contact: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
     try {
         const contactsRef = collection(db, CONTACTS_COLLECTION);
         const docRef = await addDoc(contactsRef, {
@@ -201,7 +213,7 @@ export const getCommunesByTinh = async (ma_tinh: string): Promise<Commune[]> => 
 };
 
 // Thêm commune mới
-export const addCommune = async (commune: Omit<Commune, 'id'>): Promise<string> => {
+export const addCommune = async (commune: Omit<Commune, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
     try {
         const communesRef = collection(db, COMMUNES_COLLECTION);
         const docRef = await addDoc(communesRef, {
@@ -249,50 +261,22 @@ export interface ContactWithCommune extends Contact {
     communeInfo?: Commune;
 }
 
-export const getContactWithCommune = async (contactId: string): Promise<ContactWithCommune | null> => {
-    try {
-        const contactRef = doc(db, CONTACTS_COLLECTION, contactId);
-        const contactDoc = await getDocs(query(collection(db, CONTACTS_COLLECTION), where('__name__', '==', contactId)));
-
-        if (contactDoc.empty) {
-            return null;
-        }
-
-        const contact = {
-            id: contactDoc.docs[0].id,
-            ...contactDoc.docs[0].data()
-        } as Contact;
-
-        // Nếu có ma_xa, lấy thông tin commune
-        if (contact.ma_xa) {
-            const commune = await getCommuneByMaXa(contact.ma_xa);
-            return {
-                ...contact,
-                communeInfo: commune || undefined
-            };
-        }
-
-        return contact;
-    } catch (error) {
-        console.error('Error getting contact with commune:', error);
-        throw error;
-    }
-};
-
-// Lấy tất cả contacts kèm thông tin commune
+// Lấy tất cả contacts với thông tin commune (nếu có unitCode khớp với ma_xa)
 export const getAllContactsWithCommunes = async (): Promise<ContactWithCommune[]> => {
     try {
         const contacts = await getAllContacts();
         const contactsWithCommunes: ContactWithCommune[] = [];
 
         for (const contact of contacts) {
-            if (contact.ma_xa) {
-                const commune = await getCommuneByMaXa(contact.ma_xa);
+            // Thử tìm commune bằng unitCode (nếu unitCode trùng với ma_xa)
+            try {
+                const commune = await getCommuneByMaXa(contact.unitCode);
                 contactsWithCommunes.push({
                     ...contact,
                     communeInfo: commune || undefined
                 });
-            } else {
+            } catch {
+                // Nếu không tìm thấy commune, chỉ thêm contact
                 contactsWithCommunes.push(contact);
             }
         }
@@ -306,70 +290,160 @@ export const getAllContactsWithCommunes = async (): Promise<ContactWithCommune[]
 
 // ==================== SAMPLE DATA ====================
 
-// Thêm dữ liệu mẫu cho Commune
-export const addSampleCommune = async (): Promise<void> => {
-    const sampleCommune: Omit<Commune, 'id'> = {
-        ma_xa: '25054',
-        ten_xa: 'Bảo Lâm 1',
-        name: 'Công an xã Bảo Lâm 1',
-        loai: 'Xã',
-        cap: 2,
-        ma_tinh: '68',
-        ten_tinh: 'Lâm Đồng',
-        dan_so: 44151,
-        dtich_km2: 204.43,
-        matdo_km2: 215.97,
-        address: 'đang cập nhật',
-        tru_so: 'đang cập nhật',
-        sap_nhap: 'Lộc Thắng (thị trấn), Lộc Quảng, Lộc Ngãi'
-    };
-
+// 1. Thêm tất cả communes từ communes_info.ts (dữ liệu đầy đủ)
+export const addCommunesFromInfo = async (): Promise<void> => {
     try {
-        await addCommune(sampleCommune);
-        console.log('Sample commune added successfully');
+        const { communesInfo } = await import('./communes_info');
+        
+        console.log(`Starting to add ${communesInfo.length} communes from communes_info.ts...`);
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (let i = 0; i < communesInfo.length; i++) {
+            try {
+                // communesInfo đã đúng interface CommuneInfo, chỉ cần spread
+                const communeData: Omit<Commune, 'id' | 'createdAt' | 'updatedAt'> = {
+                    ...communesInfo[i]
+                };
+                
+                await addCommune(communeData);
+                successCount++;
+                
+                if ((i + 1) % 10 === 0) {
+                    console.log(`Progress: ${i + 1}/${communesInfo.length} communes processed`);
+                }
+            } catch (error) {
+                errorCount++;
+                console.error(`Error adding commune ${communesInfo[i].ma_xa} - ${communesInfo[i].ten_xa}:`, error);
+            }
+        }
+        
+        console.log(`Completed! Successfully added ${successCount} communes, ${errorCount} errors`);
     } catch (error) {
-        console.error('Error adding sample commune:', error);
+        console.error('Error adding communes from info:', error);
         throw error;
     }
 };
 
-// Thêm dữ liệu mẫu Contacts (chỉ chạy 1 lần)
-export const addSampleData = async (): Promise<void> => {
-    const sampleContacts = [
-        {
-            name: 'Công an Quận 1',
-            phone: '0283823-0026',
-            ma_xa: '25054'
-        },
-        {
-            name: 'Công an Quận 3',
-            phone: '0283930-3693',
-            ma_xa: '25054'
-        },
-        {
-            name: 'Công an Quận 5',
-            phone: '0283855-8062',
-            ma_xa: '25054'
-        },
-        {
-            name: 'Công an TP.HCM',
-            phone: '113',
-            ma_xa: '25054'
-        },
-        {
-            name: 'Công an xã Bảo Lâm 1',
-            phone: '0123456789',
-            ma_xa: '25054' // Liên kết với commune
-        }
-    ];
-
+// 2. Thêm communes từ communes_dropdown.ts (chỉ có tên và mã xã)
+export const addCommunesFromDropdown = async (): Promise<void> => {
     try {
-        for (const contact of sampleContacts) {
-            await addContact(contact);
+        const { communesDropdown } = await import('./communes_dropdown');
+        
+        console.log(`Starting to add ${communesDropdown.length} communes from communes_dropdown.ts...`);
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (let i = 0; i < communesDropdown.length; i++) {
+            try {
+                // Xác định loại xã/phường/thị trấn từ tên
+                let loai = 'Khác';
+                if (communesDropdown[i].ten_xa.includes('Phường')) {
+                    loai = 'Phường';
+                } else if (communesDropdown[i].ten_xa.includes('Thị trấn')) {
+                    loai = 'Thị trấn';
+                } else if (communesDropdown[i].ten_xa.includes('Xã')) {
+                    loai = 'Xã';
+                }
+                
+                const communeData: Omit<Commune, 'id' | 'createdAt' | 'updatedAt'> = {
+                    ma_xa: communesDropdown[i].ma_xa,
+                    ten_xa: communesDropdown[i].ten_xa,
+                    name: `Công an ${communesDropdown[i].ten_xa}`,
+                    loai: loai,
+                    cap: 2,
+                    ma_tinh: '68',
+                    ten_tinh: 'Lâm Đồng',
+                    dan_so: 0,
+                    dtich_km2: 0,
+                    matdo_km2: 0,
+                    address: 'đang cập nhật',
+                    tru_so: 'đang cập nhật',
+                    sap_nhap: ''
+                };
+                
+                const communesRef = collection(db, COMMUNES_DROPDOWN_COLLECTION);
+                const docRef = await addDoc(communesRef, {
+                    ...communeData,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
+                successCount++;
+                
+                if ((i + 1) % 10 === 0) {
+                    console.log(`Progress: ${i + 1}/${communesDropdown.length} communes processed`);
+                }
+            } catch (error) {
+                errorCount++;
+                console.error(`Error adding commune ${communesDropdown[i].ma_xa} - ${communesDropdown[i].ten_xa}:`, error);
+            }
         }
-        console.log('Sample contacts added successfully');
+        
+        console.log(`Completed! Successfully added ${successCount} communes, ${errorCount} errors`);
     } catch (error) {
-        console.error('Error adding sample contacts:', error);
+        console.error('Error adding communes from dropdown:', error);
+        throw error;
+    }
+};
+
+// 3. Thêm contacts từ contact_info.ts (danh sách trưởng công an)
+export const addContactsFromFile = async (): Promise<void> => {
+    try {
+        const { contactInfo } = await import('./contact_info');
+        
+        console.log(`Starting to add ${contactInfo.length} contacts from contact_info.ts...`);
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (let i = 0; i < contactInfo.length; i++) {
+            try {
+                // contactInfo đã đúng interface contactInfo, chỉ cần spread
+                const contactData: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'> = {
+                    ...contactInfo[i]
+                };
+                
+                await addContact(contactData);
+                successCount++;
+                
+                if ((i + 1) % 10 === 0) {
+                    console.log(`Progress: ${i + 1}/${contactInfo.length} contacts processed`);
+                }
+            } catch (error) {
+                errorCount++;
+                console.error(`Error adding contact ${contactInfo[i].fullName}:`, error);
+            }
+        }
+        
+        console.log(`Completed! Successfully added ${successCount} contacts, ${errorCount} errors`);
+    } catch (error) {
+        console.error('Error adding contacts from file:', error);
+        throw error;
+    }
+};
+
+// 4. Thêm tất cả dữ liệu (communes_info + communes_dropdown + contacts)
+export const addAllData = async (): Promise<void> => {
+    try {
+        console.log('=== Starting to add all data ===');
+        
+        // 1. Thêm communes từ communes_info.ts (dữ liệu đầy đủ)
+        console.log('\n1. Adding communes from communes_info.ts...');
+        await addCommunesFromInfo();
+        
+        // 2. Thêm communes từ communes_dropdown.ts (dữ liệu cơ bản)
+        console.log('\n2. Adding communes from communes_dropdown.ts...');
+        await addCommunesFromDropdown();
+        
+        // 3. Thêm contacts từ contact_info.ts
+        console.log('\n3. Adding contacts from contact_info.ts...');
+        await addContactsFromFile();
+        
+        console.log('\n=== All data added successfully! ===');
+    } catch (error) {
+        console.error('Error adding all data:', error);
         throw error;
     }
 };
