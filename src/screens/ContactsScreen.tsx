@@ -64,6 +64,7 @@ const ContactsScreen = () => {
 
     const filteredContacts = contacts.filter((contact) =>
         contact.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (contact.communeInfo?.ma_xa || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (contact.communeInfo?.ten_xa || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (contact.communeInfo?.ten_tinh || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -106,7 +107,7 @@ const ContactsScreen = () => {
                             style={styles.icon} 
                         />
                         <View style={styles.textContainer}>
-                            <Text style={styles.name}>{item.communeInfo?.name || item.fullName}</Text>
+                            <Text style={styles.name}>{item.communeInfo?.ten_xa}</Text>
                             {item.communeInfo && (
                                 <Text style={styles.addressPreview} numberOfLines={1}>
                                     {item.communeInfo.ten_xa}, {item.communeInfo.ten_tinh}
