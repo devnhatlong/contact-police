@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, Linking, ImageBackground } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import Feather from '@expo/vector-icons/Feather';
 
 interface PoliceStation {
     id: number;
@@ -15,57 +16,29 @@ const ContactsScreen = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
 
     const policeStations: PoliceStation[] = [
-        { id: 1, name: "Phòng PA01", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 2, name: "Phòng PA02", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 3, name: "Phòng PA03", address: "01 Phạm Ngọc Thạch, Tổ 2, KP Phú Trung, P Bình Long, Đồng Nai", chief: "Ngô Hoài Thanh - Trưởng Công An", phone: "098.463.3565" },
-        { id: 4, name: "Phòng PA04", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 5, name: "Phòng PA05", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 6, name: "Phòng PA06", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 7, name: "Phòng PA08", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 8, name: "Phòng PA09", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 9, name: "Phòng PC01", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 10, name: "Phòng PC02", address: "" },
-        { id: 11, name: "Phòng PC03", address: "" },
-        { id: 12, name: "Phòng PC04", address: "" },
-        { id: 13, name: "Phòng PC05", address: "" },
-        { id: 14, name: "Phòng PC06", address: "" },
-        { id: 15, name: "Phòng PC07", address: "" },
-        { id: 16, name: "Phòng PC08", address: "" },
-        { id: 17, name: "Phòng PC09", address: "" },
-        { id: 18, name: "Phòng PC10", address: "" },
-        { id: 19, name: "Trại tạm giam số 1", address: "" },
-        { id: 20, name: "Trại tạm giam số 2", address: "" },
-        { id: 21, name: "Trại tạm giam số 3", address: "" },
-        { id: 22, name: "Phòng PK02", address: "" },
-        { id: 23, name: "Phòng PV01", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
-        { id: 24, name: "Phòng PV05", address: "" },
-        { id: 25, name: "Phòng PV06", address: "" },
-        { id: 26, name: "Phòng PX01", address: "" },
-        { id: 27, name: "Phòng PX03", address: "" },
-        { id: 28, name: "Phòng PX05", address: "" },
-        { id: 29, name: "Phòng PX06", address: "" },
-        { id: 30, name: "Phòng PH10", address: "" },
+        { id: 1, name: "Số điện thoại khẩn cấp", address: "" },
+        { id: 2, name: "Phòng Cảnh sát giao thông", address: "" },
 
-        { id: 31, name: "Công an phường 1 Bảo Lộc", address: "" },
-        { id: 32, name: "Công an phường 2 Bảo Lộc", address: "" },
-        { id: 33, name: "Công an phường 3 Bảo Lộc", address: "" },
-        { id: 34, name: "Công an phường B'Lao", address: "" },
-        { id: 35, name: "Công an phường Bắc Gia Nghĩa", address: "" },
-        { id: 36, name: "Công an phường Bình Thuận", address: "" },
-        { id: 37, name: "Công an phường Cam Ly - Đà Lạt", address: "" },
-        { id: 38, name: "Công an phường Hàm Thắng", address: "" },
-        { id: 39, name: "Công an phường La Gi", address: "" },
-        { id: 40, name: "Công an phường Lâm Viên - Đà Lạt", address: "" },
-        { id: 41, name: "Công an phường LangBiang - Đà Lạt", address: "" },
-        { id: 42, name: "Công an phường Mũi Né", address: "" },
-        { id: 43, name: "Công an phường Nam Gia Nghĩa", address: "" },
-        { id: 44, name: "Công an phường Phan Thiết", address: "" },
-        { id: 45, name: "Công an phường Phú Thủy", address: "" },
-        { id: 46, name: "Công an phường Phước Hội", address: "" },
-        { id: 47, name: "Công an phường Tiến Thành", address: "" },
-        { id: 48, name: "Công an phường Xuân Hương - Đà Lạt", address: "" },
-        { id: 49, name: "Công an phường Xuân Trường - Đà Lạt", address: "" },
-        { id: 50, name: "Công an phường Đông Gia Nghĩa", address: "" },
+        { id: 31, name: "Công an phường 1 Bảo Lộc", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 32, name: "Công an phường 2 Bảo Lộc", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 33, name: "Công an phường 3 Bảo Lộc", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 34, name: "Công an phường B'Lao", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 35, name: "Công an phường Bắc Gia Nghĩa", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 36, name: "Công an phường Bình Thuận", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 37, name: "Công an phường Cam Ly - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 38, name: "Công an phường Hàm Thắng", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 39, name: "Công an phường La Gi", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 40, name: "Công an phường Lâm Viên - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 41, name: "Công an phường LangBiang - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 42, name: "Công an phường Mũi Né", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 43, name: "Công an phường Nam Gia Nghĩa", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 44, name: "Công an phường Phan Thiết", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 45, name: "Công an phường Phú Thủy", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 46, name: "Công an phường Phước Hội", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 47, name: "Công an phường Tiến Thành", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 48, name: "Công an phường Xuân Hương - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 49, name: "Công an phường Xuân Trường - Đà Lạt", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
+        { id: 50, name: "Công an phường Đông Gia Nghĩa", address: "47 Trần Bình Trọng, Phường 5, Đà Lạt, Lâm Đồng", chief: "Nguyễn Văn A", phone: "0123456789" },
 
         // ---- DANH SÁCH XÃ ----
         { id: 51, name: "Công an xã Bắc Bình", address: "" },
@@ -188,22 +161,53 @@ const ContactsScreen = () => {
     const renderItem = ({ item }: { item: PoliceStation }) => {
         const isExpanded = item.id === expandedId;
 
+        const handleCall = (phone: string) => {
+            const phoneNumber = phone.replace(/\./g, '');
+            Linking.openURL(`tel:${phoneNumber}`);
+        };
+
         return (
             <TouchableOpacity
                 style={styles.card}
                 onPress={() => setExpandedId(isExpanded ? null : item.id)}
             >
-                <View style={styles.row}>
-                    <AntDesign name="right" size={20} color="red" style={styles.icon} />
-                    <Text style={styles.name}>{item.name}</Text>
+                <View style={styles.cardHeader}>
+                    <View style={styles.nameContainer}>
+                        <AntDesign 
+                            name={isExpanded ? "down" : "right"} 
+                            size={16} 
+                            color="#333" 
+                            style={styles.icon} 
+                        />
+                        <View style={styles.textContainer}>
+                            <Text style={styles.name}>{item.name}</Text>
+                            {item.address && (
+                                <Text style={styles.addressPreview} numberOfLines={1}>
+                                    {item.address}
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+                    <AntDesign name="right" size={20} color="red" />
                 </View>
-                {isExpanded && (
+                {isExpanded && item.address && (
                     <View style={styles.infoContainer}>
-                        <Text style={styles.address}>{item.address}</Text>
                         {item.chief && (
                             <View style={styles.chiefContainer}>
-                                <Text style={styles.chief}>{item.chief}</Text>
-                                <Text style={styles.phone}>{item.phone}</Text>
+                                <View style={styles.chiefRow}>
+                                    <View style={styles.chiefTextContainer}>
+                                        <Text style={styles.chief}>{item.chief}</Text>
+                                        <Text style={styles.phone}>{item.phone}</Text>
+                                    </View>
+                                    {item.phone && (
+                                        <TouchableOpacity 
+                                            onPress={() => handleCall(item.phone!)}
+                                            style={styles.phoneButtonExpanded}
+                                        >
+                                            <Feather name="phone" size={20} color="red" style={{ transform: [{ scaleX: -1 }] }} />
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                             </View>
                         )}
                     </View>
@@ -213,7 +217,12 @@ const ContactsScreen = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <ImageBackground
+            source={require('../../assets/images/bg.png')}
+            style={styles.container}
+            resizeMode="cover"
+            imageStyle={{ opacity: 0.2 }}
+        >
             <Text style={styles.header}>Danh bạ điện thoại</Text>
             <TextInput
                 style={styles.searchBar}
@@ -226,14 +235,14 @@ const ContactsScreen = () => {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
             />
-        </View>
+        </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: 'transparent',
         padding: 10,
     },
     header: {
@@ -248,7 +257,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     card: {
-        backgroundColor: '#fff',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
         borderRadius: 10,
         padding: 16,
         marginBottom: 12,
@@ -258,32 +267,75 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
     },
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    nameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    textContainer: {
+        flex: 1,
+    },
+    rightActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    phoneButton: {
+        padding: 4,
+    },
     row: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     icon: {
-        marginRight: 10,
+        marginRight: 8,
     },
     infoContainer: {
         marginTop: 10,
+        paddingLeft: 24,
     },
     name: {
-        fontWeight: 'bold',
-        fontSize: 18,
+        fontWeight: '600',
+        fontSize: 16,
+        color: '#333',
+    },
+    addressPreview: {
+        color: '#999',
+        fontSize: 13,
+        marginTop: 2,
     },
     address: {
-        color: '#555',
+        color: '#666',
         marginBottom: 4,
+        fontSize: 14,
     },
     chiefContainer: {
         marginTop: 4,
     },
+    chiefRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    chiefTextContainer: {
+        flex: 1,
+    },
+    phoneButtonExpanded: {
+        padding: 4,
+        marginLeft: 8,
+    },
     chief: {
         fontWeight: 'bold',
+        fontSize: 14,
     },
     phone: {
         color: '#007AFF',
+        fontSize: 14,
     },
 });
 
