@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import ContactsScreen from './src/screens/ContactsScreen';
 import MapScreen from './src/screens/MapScreen';
@@ -22,27 +22,34 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const MapStack = createNativeStackNavigator();
 
+// Màu chủ đạo của app
+const PRIMARY_COLOR = '#dc3545';
+
+// ===========================
+// Contacts Stack (header nhỏ)
+// ===========================
 function ContactsStack() {
   return (
-    <Stack.Navigator 
-      screenOptions={{ 
+    <Stack.Navigator
+      screenOptions={{
         headerShown: true,
         headerStyle: {
-          backgroundColor: '#dc3545',
+          backgroundColor: PRIMARY_COLOR,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
           fontWeight: '600',
+          fontSize: 20,
         },
       }}
     >
-      <Stack.Screen 
-        name="ContactsList" 
+      <Stack.Screen
+        name="ContactsList"
         component={ContactsScreen}
         options={({ navigation }) => ({
           title: 'Công an tỉnh Lâm Đồng',
           headerRight: () => (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.importButton}
               onPress={async () => {
                 Alert.alert(
@@ -59,7 +66,7 @@ function ContactsStack() {
                         } catch (error: any) {
                           Alert.alert('Lỗi', error.message || 'Không thể thêm dữ liệu');
                         }
-                      }
+                      },
                     },
                     {
                       text: 'Commune',
@@ -70,7 +77,7 @@ function ContactsStack() {
                         } catch (error: any) {
                           Alert.alert('Lỗi', error.message || 'Không thể thêm dữ liệu');
                         }
-                      }
+                      },
                     },
                     {
                       text: 'Cả hai',
@@ -78,12 +85,12 @@ function ContactsStack() {
                         try {
                           await addSampleCommune();
                           await addSampleData();
-                          Alert.alert('Thành công', 'Đã thêm tất cả dữ liệu mẫu vào Firebase!');
+                          Alert.alert('Thành công', 'Đã thêm tất cả dữ liệu mẫu!');
                         } catch (error: any) {
                           Alert.alert('Lỗi', error.message || 'Không thể thêm dữ liệu');
                         }
-                      }
-                    }
+                      },
+                    },
                   ]
                 );
               }}
@@ -93,10 +100,11 @@ function ContactsStack() {
           ),
         })}
       />
-      <Stack.Screen 
-        name="CommuneDetail" 
+
+      <Stack.Screen
+        name="CommuneDetail"
         component={CommuneDetailScreen}
-        options={({ route }) => ({ 
+        options={({ route }) => ({
           title: `Chi tiết ${route.params?.communeInfo?.ten_xa || ''}`,
         })}
       />
@@ -104,23 +112,27 @@ function ContactsStack() {
   );
 }
 
+
+// ===========================
+// Map Stack (header nhỏ)
+// ===========================
 function MapStackScreen() {
   return (
-    <MapStack.Navigator 
-      screenOptions={{ 
+    <MapStack.Navigator
+      screenOptions={{
         headerShown: true,
         headerStyle: {
-          backgroundColor: '#dc3545',
+          backgroundColor: PRIMARY_COLOR,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
           fontWeight: '600',
-          fontSize: 16,
+          fontSize: 20,
         },
       }}
     >
-      <MapStack.Screen 
-        name="MapMain" 
+      <MapStack.Screen
+        name="MapMain"
         component={MapScreen}
         options={{
           title: 'Bản đồ Công an tỉnh Lâm Đồng',
@@ -130,38 +142,40 @@ function MapStackScreen() {
   );
 }
 
+
+// ===========================
+// App chính
+// ===========================
 export default function App() {
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#dc3545' }} edges={['top']}>
-        <StatusBar
-          translucent={false}
-          backgroundColor="#dc3545"
-          barStyle="light-content"
-        />
 
-        <NavigationContainer>
-          <Tab.Navigator
-            screenOptions={({ route }) => ({
-              headerShown: false,
-              tabBarActiveTintColor: 'red',
-              tabBarIcon: ({ color, size }) => {
-                if (route.name === 'Danh bạ') {
-                  return <AntDesign name="contacts" size={size} color={color} />;
-                } else if (route.name === 'Bản đồ') {
-                  return <FontAwesome name="map-o" size={size} color={color} />
-                }
-              },
-            })}
-          >
-            <Tab.Screen name="Danh bạ" component={ContactsStack} />
-            <Tab.Screen name="Bản đồ" component={MapStackScreen} />
-          </Tab.Navigator>
-        </NavigationContainer>
-      </SafeAreaView>
+      {/* Header màu đỏ đúng chuẩn */}
+      <StatusBar backgroundColor={PRIMARY_COLOR} barStyle="light-content" />
+
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            headerShown: false,
+            tabBarActiveTintColor: PRIMARY_COLOR,
+            tabBarIcon: ({ color, size }) => {
+              if (route.name === 'Danh bạ') {
+                return <AntDesign name="contacts" size={size} color={color} />;
+              } else if (route.name === 'Bản đồ') {
+                return <FontAwesome name="map-o" size={size} color={color} />;
+              }
+            },
+          })}
+        >
+          <Tab.Screen name="Danh bạ" component={ContactsStack} />
+          <Tab.Screen name="Bản đồ" component={MapStackScreen} />
+        </Tab.Navigator>
+      </NavigationContainer>
+
     </SafeAreaProvider>
   );
 }
+
 
 const styles = StyleSheet.create({
   importButton: {
