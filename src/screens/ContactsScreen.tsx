@@ -107,7 +107,7 @@ const ContactsScreen = () => {
                             style={styles.icon} 
                         />
                         <View style={styles.textContainer}>
-                            <Text style={styles.name}>{item.communeInfo?.ten_xa}</Text>
+                            <Text style={styles.name}>{item.communeInfo?.name}</Text>
                             {item.communeInfo && (
                                 <Text style={styles.addressPreview} numberOfLines={1}>
                                     {item.communeInfo.ten_xa}, {item.communeInfo.ten_tinh}
