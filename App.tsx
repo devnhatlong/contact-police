@@ -11,12 +11,11 @@ import ContactsScreen from './src/screens/ContactsScreen';
 import MapScreen from './src/screens/MapScreen';
 import CommuneDetailScreen from './src/screens/CommuneDetailScreen';
 import { 
-  addCommunesFromInfo, 
-  addCommunesFromDropdown, 
-  addContactsFromFile,
-  addAllData
-} from './src/services/firebaseService';
-import { Commune } from './src/services/firebaseService';
+  importCommunes,
+  importContacts,
+  importAll
+} from './src/scripts';
+import { Commune } from './src/models';
 
 export type RootStackParamList = {
   ContactsList: undefined;
@@ -42,24 +41,20 @@ function ContactsStack() {
     try {
       switch (type) {
         case 'contacts':
-          await addContactsFromFile();
-          Alert.alert('Thành công', 'Đã thêm contacts từ contact_info.ts!');
+          await importContacts();
+          Alert.alert('Thành công', 'Đã import contacts lên Firebase!');
           break;
-        case 'communes_info':
-          await addCommunesFromInfo();
-          Alert.alert('Thành công', 'Đã thêm communes từ communes_info.ts!');
-          break;
-        case 'communes_dropdown':
-          await addCommunesFromDropdown();
-          Alert.alert('Thành công', 'Đã thêm communes từ communes_dropdown.ts!');
+        case 'communes':
+          await importCommunes();
+          Alert.alert('Thành công', 'Đã import communes lên Firebase!');
           break;
         case 'all':
-          await addAllData();
-          Alert.alert('Thành công', 'Đã thêm tất cả dữ liệu!');
+          await importAll();
+          Alert.alert('Thành công', 'Đã import tất cả dữ liệu lên Firebase!');
           break;
       }
     } catch (error: any) {
-      Alert.alert('Lỗi', error.message || 'Không thể thêm dữ liệu');
+      Alert.alert('Lỗi', error.message || 'Không thể import dữ liệu');
     }
   };
 
@@ -106,28 +101,21 @@ function ContactsStack() {
                       style={styles.modalButton}
                       onPress={() => handleImport('contacts')}
                     >
-                      <Text style={styles.modalButtonText}>Contacts (contact_info.ts)</Text>
+                      <Text style={styles.modalButtonText}>Import Contacts</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={styles.modalButton}
-                      onPress={() => handleImport('communes_info')}
+                      onPress={() => handleImport('communes')}
                     >
-                      <Text style={styles.modalButtonText}>Communes (communes_info.ts)</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.modalButton}
-                      onPress={() => handleImport('communes_dropdown')}
-                    >
-                      <Text style={styles.modalButtonText}>Communes (communes_dropdown.ts)</Text>
+                      <Text style={styles.modalButtonText}>Import Communes</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={styles.modalButton}
                       onPress={() => handleImport('all')}
                     >
-                      <Text style={styles.modalButtonText}>Tất cả</Text>
+                      <Text style={styles.modalButtonText}>Import Tất cả</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity

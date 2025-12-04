@@ -4,7 +4,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { getAllContactsWithCommunes, deleteContact, ContactWithCommune } from '../services/firebaseService';
+import { getAllContactsWithCommunes, deleteContact } from '../services';
+import type { ContactWithCommune } from '../models';
 
 type RootStackParamList = {
     ContactsList: undefined;
