@@ -96,6 +96,7 @@ const ContactsScreen = () => {
         return (
             <TouchableOpacity
                 style={styles.card}
+                activeOpacity={1}
                 onPress={() => setExpandedId(isExpanded ? null : item.id || null)}
             >
                 <View style={styles.cardHeader}>
@@ -162,6 +163,7 @@ const ContactsScreen = () => {
                     value={searchQuery}
                     onChangeText={(text) => setSearchQuery(text)}
                 />
+                
                 {searchQuery.length > 0 && (
                     <TouchableOpacity 
                         style={styles.clearButton}
